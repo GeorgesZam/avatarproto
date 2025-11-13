@@ -101,7 +101,7 @@ apply_clean_theme()
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="main-container">', unsafe_allow_html=True)
+        
         st.markdown('<h1 class="white-text">🎯 PERSONALITY QUEST</h1>', unsafe_allow_html=True)
         
         name = st.text_input("Enter your name:")
@@ -123,7 +123,7 @@ else:
     if not st.session_state.quiz_started and not st.session_state.quiz_completed:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="main-container">', unsafe_allow_html=True)
+            
             st.markdown(f'<h2 class="white-text">Welcome {st.session_state.name}!</h2>', unsafe_allow_html=True)
             
             if st.button("BEGIN QUIZ"):
@@ -142,7 +142,7 @@ else:
                 
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+                    
                     st.markdown(f'<h3 class="white-text">Question {current_q + 1}</h3>', unsafe_allow_html=True)
                     st.markdown(f'<p class="white-text">{question_text}</p>', unsafe_allow_html=True)
                     
@@ -164,7 +164,7 @@ else:
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="main-container">', unsafe_allow_html=True)
+            
             st.markdown('<h2 class="white-text">🎉 QUIZ COMPLETED!</h2>', unsafe_allow_html=True)
             
             if st.session_state.user_photo:
