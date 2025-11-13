@@ -101,7 +101,7 @@ apply_clean_theme()
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<h1 class="white-text">🎯 PERSONALITY QUEST</h1>', unsafe_allow_html=True)
+        
         
         name = st.text_input("Enter your name:")
         uploaded_photo = st.camera_input("Take a photo")
