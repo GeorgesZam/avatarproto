@@ -122,7 +122,6 @@ else:
     if not st.session_state.quiz_started and not st.session_state.quiz_completed:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="main-container">', unsafe_allow_html=True)
             st.markdown(f'<h2 class="white-text">Welcome {st.session_state.name}!</h2>', unsafe_allow_html=True)
             
             if st.button("BEGIN QUIZ"):
