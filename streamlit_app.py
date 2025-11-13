@@ -162,7 +162,7 @@ else:
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="main-container">', unsafe_allow_html=True)
+            
             st.markdown('<h2 class="white-text">🎉 QUIZ COMPLETED!</h2>', unsafe_allow_html=True)
             
             if st.session_state.user_photo:
