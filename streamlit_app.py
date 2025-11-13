@@ -24,138 +24,44 @@ def load_questions():
         st.error(f"Error loading questions: {e}")
         return pd.DataFrame()
 
-def apply_dark_theme():
+def apply_clean_theme():
     logo_path = Path(__file__).parent / "logo.jpg"
     base64_logo = get_base64_image(logo_path)
-    
-    background_style = f"""
-    .stApp {{
-        background-image: url("data:image/jpg;base64,{base64_logo}") !important;
-        background-size: cover !important;
-        background-position: center !important;
-        background-attachment: fixed !important;
-    }}
-    """ if base64_logo else """
-    .stApp {
-        background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%) !important;
-    }
-    """
     
     st.markdown(
         f"""
         <style>
-        /* Reset Streamlit defaults */
         .stApp {{
-            background-color: transparent !important;
+            background-image: url("data:image/jpg;base64,{base64_logo}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }}
         
-        .main .block-container {{
-            background-color: transparent !important;
-        }}
-        
-        {background_style}
-        
-        /* Global text color */
-        .stApp, .stMarkdown, .stText {{
-            color: #ffffff !important;
-        }}
-        
-        /* Container styling */
-        .dark-container {{
-            background: rgba(0, 0, 0, 0.85) !important;
+        .main-container {{
+            background: rgba(0, 0, 0, 0.8);
             padding: 2rem;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            margin: 1rem 0;
+            border-radius: 10px;
+            margin: 1rem;
         }}
         
-        /* Button styling */
+        .white-text {{
+            color: white;
+            text-align: center;
+        }}
+        
         .stButton > button {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 10px !important;
-            padding: 0.8rem 1.5rem !important;
-            font-weight: 600 !important;
-            width: 100% !important;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 5px;
+            width: 100%;
+            margin: 0.2rem 0;
         }}
         
         .stButton > button:hover {{
-            transform: translateY(-2px) !important;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
-        }}
-        
-        /* Input styling */
-        .stTextInput > div > div > input {{
-            background: rgba(255,255,255,0.1) !important;
-            color: white !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
-        }}
-        
-        /* Camera input */
-        .stCameraInput > div {{
-            background: rgba(255,255,255,0.1) !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
-            border-radius: 10px !important;
-        }}
-        
-        /* Text elements */
-        .dark-title {{
-            color: #ffffff !important;
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }}
-        
-        .dark-subtitle {{
-            color: #cccccc !important;
-            text-align: center;
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }}
-        
-        .dark-question {{
-            color: #ffffff !important;
-            font-size: 1.3rem;
-            text-align: center;
-            margin: 1rem 0;
-            line-height: 1.5;
-        }}
-        
-        .dark-score {{
-            color: #ffd700 !important;
-            font-size: 3rem;
-            text-align: center;
-            font-weight: bold;
-        }}
-        
-        .dark-personality {{
-            color: #66ccff !important;
-            font-size: 1.8rem;
-            text-align: center;
-            font-weight: bold;
-            margin: 1rem 0;
-        }}
-        
-        /* Summary box */
-        .dark-summary {{
-            background: rgba(100,100,255,0.2) !important;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border: 1px solid rgba(100,100,255,0.3);
-            margin: 1rem 0;
-        }}
-        
-        /* Force dark background for all containers */
-        div[data-testid="stVerticalBlock"] > div {{
-            background-color: transparent !important;
-        }}
-        
-        /* Remove any white backgrounds */
-        .element-container, .stMarkdown, .stButton {{
-            background-color: transparent !important;
+            background: #45a049;
         }}
         </style>
         """,
@@ -164,17 +70,16 @@ def apply_dark_theme():
 
 def celebrate_animation():
     st.balloons()
-    time.sleep(0.5)
 
 def get_personality_type(score):
     if score >= 16:
-        return "The Visionary Leader", "You are a natural born leader with big ideas and the drive to make them happen!"
+        return "The Visionary Leader", "You are a natural born leader!"
     elif score >= 12:
-        return "The Creative Innovator", "Your imagination knows no bounds and you see possibilities everywhere!"
+        return "The Creative Innovator", "Your imagination knows no bounds!"
     elif score >= 8:
-        return "The Analytical Thinker", "You approach life with logic and careful consideration."
+        return "The Analytical Thinker", "You approach life with logic."
     else:
-        return "The Supportive Collaborator", "You thrive in teams and bring people together with your empathy!"
+        return "The Supportive Collaborator", "You bring people together!"
 
 if 'name' not in st.session_state:
     st.session_state.name = ""
@@ -191,28 +96,25 @@ if 'quiz_completed' not in st.session_state:
 if 'user_photo' not in st.session_state:
     st.session_state.user_photo = None
 
-apply_dark_theme()
+apply_clean_theme()
 
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="dark-container">', unsafe_allow_html=True)
-        st.markdown('<div class="dark-title">🎯 PERSONALITY QUEST</div>', unsafe_allow_html=True)
-        st.markdown('<div class="dark-subtitle">Discover Your True Self</div>', unsafe_allow_html=True)
+        st.markdown('<div class="main-container">', unsafe_allow_html=True)
+        st.markdown('<h1 class="white-text">🎯 PERSONALITY QUEST</h1>', unsafe_allow_html=True)
         
-        name = st.text_input("**Enter your name:**", key="name_input")
-        uploaded_photo = st.camera_input("**Take a photo for your profile**")
+        name = st.text_input("Enter your name:")
+        uploaded_photo = st.camera_input("Take a photo")
         
         if uploaded_photo:
             st.session_state.user_photo = Image.open(uploaded_photo)
         
-        if st.button("🚀 Start Your Journey", use_container_width=True):
+        if st.button("START"):
             if name and name.strip():
                 st.session_state.name = name.strip()
                 st.session_state.logged_in = True
                 st.rerun()
-            else:
-                st.error("Please enter your name to continue!")
         st.markdown('</div>', unsafe_allow_html=True)
 
 else:
@@ -221,11 +123,10 @@ else:
     if not st.session_state.quiz_started and not st.session_state.quiz_completed:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="dark-container">', unsafe_allow_html=True)
-            st.markdown(f'<div class="dark-title">Welcome, {st.session_state.name}! 🌟</div>', unsafe_allow_html=True)
-            st.markdown('<div class="dark-subtitle">Ready to uncover your unique personality traits?</div>', unsafe_allow_html=True)
+            st.markdown('<div class="main-container">', unsafe_allow_html=True)
+            st.markdown(f'<h2 class="white-text">Welcome {st.session_state.name}!</h2>', unsafe_allow_html=True)
             
-            if st.button("🎯 Begin Personality Test", use_container_width=True):
+            if st.button("BEGIN QUIZ"):
                 st.session_state.quiz_started = True
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
@@ -241,25 +142,15 @@ else:
                 
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.markdown('<div class="dark-container">', unsafe_allow_html=True)
+                    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+                    st.markdown(f'<h3 class="white-text">Question {current_q + 1}</h3>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="white-text">{question_text}</p>', unsafe_allow_html=True)
                     
-                    # Afficher d'abord les boutons
                     for i, option in enumerate(options):
-                        if st.button(option, key=f"option_{current_q}_{i}", use_container_width=True):
+                        if st.button(option, key=f"option_{i}"):
                             st.session_state.current_question += 1
                             st.session_state.score += random.randint(1, 5)
                             st.rerun()
-                    
-                    # Ensuite afficher la question avec animation
-                    st.markdown(f'<div class="dark-title">Question {current_q + 1}</div>', unsafe_allow_html=True)
-                    
-                    # Animation typewriter pour la question
-                    placeholder = st.empty()
-                    displayed_text = ""
-                    for char in question_text:
-                        displayed_text += char
-                        placeholder.markdown(f'<div class="dark-question">{displayed_text}</div>', unsafe_allow_html=True)
-                        time.sleep(0.03)
                     
                     st.markdown('</div>', unsafe_allow_html=True)
             else:
@@ -273,34 +164,17 @@ else:
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="dark-container">', unsafe_allow_html=True)
-            st.markdown('<div class="dark-title">🎉 Quiz Completed!</div>', unsafe_allow_html=True)
-            st.markdown('<div class="dark-subtitle">Your Personality Results</div>', unsafe_allow_html=True)
+            st.markdown('<div class="main-container">', unsafe_allow_html=True)
+            st.markdown('<h2 class="white-text">🎉 QUIZ COMPLETED!</h2>', unsafe_allow_html=True)
             
             if st.session_state.user_photo:
-                st.image(st.session_state.user_photo, width=200)
+                st.image(st.session_state.user_photo, width=150)
             
-            st.markdown(f'<div class="dark-score">{final_score}/20</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="dark-personality">{personality_type}</div>', unsafe_allow_html=True)
+            st.markdown(f'<h1 class="white-text">{final_score}/20</h1>', unsafe_allow_html=True)
+            st.markdown(f'<h3 class="white-text">{personality_type}</h3>', unsafe_allow_html=True)
+            st.markdown(f'<p class="white-text">{personality_desc}</p>', unsafe_allow_html=True)
             
-            # Animation pour la description
-            desc_placeholder = st.empty()
-            displayed_desc = ""
-            for char in personality_desc:
-                displayed_desc += char
-                desc_placeholder.markdown(f'<div class="dark-question">{displayed_desc}</div>', unsafe_allow_html=True)
-                time.sleep(0.03)
-            
-            st.markdown(f'''
-            <div class="dark-summary">
-                <h4 style="color: white !important; text-align: center; margin-bottom: 1rem;">Your Journey Summary</h4>
-                <p style="color: #cccccc !important; text-align: center; margin: 0;">
-                    Completed {len(questions_df)} questions • Score: {final_score} • {personality_type}
-                </p>
-            </div>
-            ''', unsafe_allow_html=True)
-            
-            if st.button("🔄 Take Test Again", use_container_width=True):
+            if st.button("RESTART QUIZ"):
                 st.session_state.current_question = 0
                 st.session_state.score = 0
                 st.session_state.quiz_completed = False
