@@ -183,6 +183,19 @@ else:
                 st.rerun()
 
             if 'game_active' in st.session_state and st.session_state.game_active:
+                # Appliquer un fond classique pour le jeu
+                st.markdown(
+                    """
+                    <style>
+                    .stApp {
+                        background-image: none !important;
+                        background-color: #f0f2f6 !important;
+                    }
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+                
                 st.markdown("---")
                 st.markdown('<h3 class="panel-text">🎮 3D Game</h3>', unsafe_allow_html=True)
                 
