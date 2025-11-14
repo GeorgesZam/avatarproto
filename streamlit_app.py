@@ -2,10 +2,6 @@ import streamlit as st
 import pandas as pd
 import time
 import random
-import subprocess
-import sys
-import os
-import tempfile
 from pathlib import Path
 import base64
 from PIL import Image
@@ -109,7 +105,6 @@ apply_clean_theme()
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.markdown('<div class="main-container">', unsafe_allow_html=True)
         st.markdown('<h1 class="panel-text">🎯 PERSONALITY QUEST</h1>', unsafe_allow_html=True)
 
         name = st.text_input("Enter your name:")
@@ -123,7 +118,6 @@ if not st.session_state.logged_in:
                 st.session_state.name = name.strip()
                 st.session_state.logged_in = True
                 st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     questions_df = load_questions()
@@ -131,13 +125,11 @@ else:
     if not st.session_state.quiz_started and not st.session_state.quiz_completed:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="main-container">', unsafe_allow_html=True)
             st.markdown(f'<h2 class="panel-text">Welcome {st.session_state.name}!</h2>', unsafe_allow_html=True)
 
             if st.button("BEGIN QUIZ"):
                 st.session_state.quiz_started = True
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
     
     elif st.session_state.quiz_started and not st.session_state.quiz_completed:
         if len(questions_df) > 0:
@@ -150,7 +142,6 @@ else:
                 
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    st.markdown('<div class="main-container">', unsafe_allow_html=True)
                     st.markdown(f'<h3 class="panel-text">Question {current_q + 1}</h3>', unsafe_allow_html=True)
                     st.markdown(f'<p class="panel-text">{question_text}</p>', unsafe_allow_html=True)
 
@@ -159,8 +150,6 @@ else:
                             st.session_state.current_question += 1
                             st.session_state.score += random.randint(1, 5)
                             st.rerun()
-
-                    st.markdown('</div>', unsafe_allow_html=True)
             else:
                 st.session_state.quiz_completed = True
                 st.rerun()
@@ -172,7 +161,6 @@ else:
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.markdown('<div class="main-container">', unsafe_allow_html=True)
             st.markdown('<h2 class="panel-text">🎉 QUIZ COMPLETED!</h2>', unsafe_allow_html=True)
 
             if st.session_state.user_photo:
@@ -191,45 +179,85 @@ else:
                 st.rerun()
 
             if st.button("PLAY A GAME"):
-                try:
-                    # Write a minimal Panda3D script to disk
-                    game_code = r"""
-from direct.showbase.ShowBase import ShowBase
-from panda3d.core import LVector3
-import sys
+                st.session_state.game_active = True
+                st.rerun()
 
-class MyApp(ShowBase):
-    def __init__(self):
-        super().__init__()
-        # Simple scene: a rotating model if available; otherwise empty scene
-        try:
-            model = self.loader.loadModel('models/panda')
-            model.reparentTo(self.render)
-            model.setScale(0.5)
-            model.setPos(0, 10, -1)
-            self.taskMgr.add(self.spin, 'spinTask')
-        except Exception:
-            pass
-
-    def spin(self, task):
-        if self.render:
-            self.render.setHpr(task.time * 30, 0, 0)
-        return task.cont
-
-if __name__ == '__main__':
-    app = MyApp()
-    app.run()
-"""
-
-                    game_path = Path(__file__).parent / 'panda_game.py'
-                    with open(game_path, 'w', encoding='utf-8') as f:
-                        f.write(game_code)
-
-                    # Try launching the Panda3D script in background
-                    subprocess.Popen([sys.executable, str(game_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    st.success('Le jeu a été lancé dans une fenêtre séparée (si Panda3D est installé).')
-                    st.info('Remarque: Panda3D ouvrira une fenêtre native en dehors du navigateur; cela peut ne pas fonctionner dans certains environnements distants.')
-                except Exception as e:
-                    st.error(f"Impossible de lancer le jeu: {e}")
-
-            st.markdown('</div>', unsafe_allow_html=True)
+            if 'game_active' in st.session_state and st.session_state.game_active:
+                st.markdown("---")
+                st.markdown('<h3 class="panel-text">🎮 3D Game</h3>', unsafe_allow_html=True)
+                
+                game_html = r"""
+<canvas id="gameCanvas" style="display: block; margin: 0 auto; border: 2px solid #07213a; border-radius: 8px; width: 100%; max-width: 600px; height: 400px;"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babylon.js/5.0.0/babylon.min.js"></script>
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const engine = new BABYLON.Engine(canvas, true);
+    const scene = new BABYLON.Scene(engine);
+    
+    // Camera
+    const camera = new BABYLON.UniversalCamera('camera1', new BABYLON.Vector3(0, 5, -15));
+    camera.attachControl(canvas, true);
+    camera.speed = 0.15;
+    
+    // Light
+    const light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(1, 1, 1), scene);
+    light.intensity = 0.8;
+    
+    // Sky
+    scene.clearColor = new BABYLON.Color3(0.5, 0.7, 1);
+    
+    // Ground
+    const ground = BABYLON.MeshBuilder.CreateGround('ground', {width: 50, height: 50}, scene);
+    const groundMat = new BABYLON.StandardMaterial('groundMat', scene);
+    groundMat.diffuse = new BABYLON.Color3(0.2, 0.8, 0.2);
+    ground.material = groundMat;
+    
+    // Player (sphere)
+    const player = BABYLON.MeshBuilder.CreateSphere('player', {diameter: 1}, scene);
+    player.position.y = 1;
+    const playerMat = new BABYLON.StandardMaterial('playerMat', scene);
+    playerMat.diffuse = new BABYLON.Color3(1, 0.5, 0);
+    player.material = playerMat;
+    
+    // Collectibles (small boxes)
+    const collectibles = [];
+    for (let i = 0; i < 5; i++) {
+        const box = BABYLON.MeshBuilder.CreateBox('box' + i, {size: 0.5}, scene);
+        box.position = new BABYLON.Vector3(Math.random() * 20 - 10, 1, Math.random() * 20 - 10);
+        const boxMat = new BABYLON.StandardMaterial('boxMat' + i, scene);
+        boxMat.diffuse = new BABYLON.Color3(Math.random(), Math.random(), Math.random());
+        box.material = boxMat;
+        collectibles.push(box);
+    }
+    
+    // Keyboard input
+    const keys = {};
+    window.addEventListener('keydown', (e) => keys[e.key] = true);
+    window.addEventListener('keyup', (e) => keys[e.key] = false);
+    
+    // Game loop
+    engine.runRenderLoop(() => {
+        if (keys['ArrowUp'] || keys['w']) player.position.z += 0.2;
+        if (keys['ArrowDown'] || keys['s']) player.position.z -= 0.2;
+        if (keys['ArrowLeft'] || keys['a']) player.position.x -= 0.2;
+        if (keys['ArrowRight'] || keys['d']) player.position.x += 0.2;
+        
+        collectibles.forEach((box, idx) => {
+            box.rotation.y += 0.01;
+            if (BABYLON.Vector3.Distance(player.position, box.position) < 1.5) {
+                box.dispose();
+                collectibles.splice(idx, 1);
+            }
+        });
+        
+        scene.render();
+    });
+    
+    window.addEventListener('resize', () => engine.resize());
+</script>
+                """
+                st.components.v1.html(game_html, height=600)
+                
+                if st.button("Quitter le jeu"):
+                    st.session_state.game_active = False
+                    st.rerun()
