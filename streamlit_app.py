@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import time
 import random
+import subprocess
+import sys
+import os
+import tempfile
 from pathlib import Path
 import base64
 from PIL import Image
@@ -37,31 +41,35 @@ def apply_clean_theme():
             background-position: center;
             background-attachment: fixed;
         }}
-        
+
+        /* Main panel to improve contrast against the blue/white building background */
         .main-container {{
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.95);
             padding: 2rem;
-            border-radius: 10px;
+            border-radius: 12px;
             margin: 1rem;
+            box-shadow: 0 6px 18px rgba(11, 37, 69, 0.15);
         }}
-        
-        .white-text {{
-            color: white;
+
+        /* Panel text: dark color for good contrast */
+        .panel-text {{
+            color: #07213a;
             text-align: center;
+            margin: 0.4rem 0;
         }}
         
         .stButton > button {{
-            background: #4CAF50;
+            background: #0b67b2;
             color: white;
             border: none;
             padding: 0.7rem 1rem;
-            border-radius: 5px;
+            border-radius: 8px;
             width: 100%;
-            margin: 0.2rem 0;
+            margin: 0.4rem 0;
         }}
-        
+
         .stButton > button:hover {{
-            background: #45a049;
+            background: #095fa0;
         }}
         </style>
         """,
@@ -101,15 +109,15 @@ apply_clean_theme()
 if not st.session_state.logged_in:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        
-        st.markdown('<h1 class="white-text">🎯 PERSONALITY QUEST</h1>', unsafe_allow_html=True)
-        
+        st.markdown('<div class="main-container">', unsafe_allow_html=True)
+        st.markdown('<h1 class="panel-text">🎯 PERSONALITY QUEST</h1>', unsafe_allow_html=True)
+
         name = st.text_input("Enter your name:")
         uploaded_photo = st.camera_input("Take a photo")
-        
+
         if uploaded_photo:
             st.session_state.user_photo = Image.open(uploaded_photo)
-        
+
         if st.button("START"):
             if name and name.strip():
                 st.session_state.name = name.strip()
@@ -123,9 +131,9 @@ else:
     if not st.session_state.quiz_started and not st.session_state.quiz_completed:
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            
-            st.markdown(f'<h2 class="white-text">Welcome {st.session_state.name}!</h2>', unsafe_allow_html=True)
-            
+            st.markdown('<div class="main-container">', unsafe_allow_html=True)
+            st.markdown(f'<h2 class="panel-text">Welcome {st.session_state.name}!</h2>', unsafe_allow_html=True)
+
             if st.button("BEGIN QUIZ"):
                 st.session_state.quiz_started = True
                 st.rerun()
@@ -142,16 +150,16 @@ else:
                 
                 col1, col2, col3 = st.columns([1, 2, 1])
                 with col2:
-                    
-                    st.markdown(f'<h3 class="white-text">Question {current_q + 1}</h3>', unsafe_allow_html=True)
-                    st.markdown(f'<p class="white-text">{question_text}</p>', unsafe_allow_html=True)
-                    
+                    st.markdown('<div class="main-container">', unsafe_allow_html=True)
+                    st.markdown(f'<h3 class="panel-text">Question {current_q + 1}</h3>', unsafe_allow_html=True)
+                    st.markdown(f'<p class="panel-text">{question_text}</p>', unsafe_allow_html=True)
+
                     for i, option in enumerate(options):
                         if st.button(option, key=f"option_{i}"):
                             st.session_state.current_question += 1
                             st.session_state.score += random.randint(1, 5)
                             st.rerun()
-                    
+
                     st.markdown('</div>', unsafe_allow_html=True)
             else:
                 st.session_state.quiz_completed = True
@@ -164,21 +172,64 @@ else:
         
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            
-            st.markdown('<h2 class="white-text">🎉 QUIZ COMPLETED!</h2>', unsafe_allow_html=True)
-            
+            st.markdown('<div class="main-container">', unsafe_allow_html=True)
+            st.markdown('<h2 class="panel-text">🎉 QUIZ COMPLETED!</h2>', unsafe_allow_html=True)
+
             if st.session_state.user_photo:
                 st.image(st.session_state.user_photo, width=150)
-            
-            st.markdown(f'<h1 class="white-text">{final_score}/20</h1>', unsafe_allow_html=True)
-            st.markdown(f'<h3 class="white-text">{personality_type}</h3>', unsafe_allow_html=True)
-            st.markdown(f'<p class="white-text">{personality_desc}</p>', unsafe_allow_html=True)
-            
+
+            st.markdown(f'<h1 class="panel-text">{final_score}/20</h1>', unsafe_allow_html=True)
+            st.markdown(f'<h3 class="panel-text">{personality_type}</h3>', unsafe_allow_html=True)
+            st.markdown(f'<p class="panel-text">{personality_desc}</p>', unsafe_allow_html=True)
+
+            # Restart and Play buttons
             if st.button("RESTART QUIZ"):
                 st.session_state.current_question = 0
                 st.session_state.score = 0
                 st.session_state.quiz_completed = False
                 st.session_state.quiz_started = False
                 st.rerun()
-            
+
+            if st.button("PLAY A GAME"):
+                try:
+                    # Write a minimal Panda3D script to disk
+                    game_code = r"""
+from direct.showbase.ShowBase import ShowBase
+from panda3d.core import LVector3
+import sys
+
+class MyApp(ShowBase):
+    def __init__(self):
+        super().__init__()
+        # Simple scene: a rotating model if available; otherwise empty scene
+        try:
+            model = self.loader.loadModel('models/panda')
+            model.reparentTo(self.render)
+            model.setScale(0.5)
+            model.setPos(0, 10, -1)
+            self.taskMgr.add(self.spin, 'spinTask')
+        except Exception:
+            pass
+
+    def spin(self, task):
+        if self.render:
+            self.render.setHpr(task.time * 30, 0, 0)
+        return task.cont
+
+if __name__ == '__main__':
+    app = MyApp()
+    app.run()
+"""
+
+                    game_path = Path(__file__).parent / 'panda_game.py'
+                    with open(game_path, 'w', encoding='utf-8') as f:
+                        f.write(game_code)
+
+                    # Try launching the Panda3D script in background
+                    subprocess.Popen([sys.executable, str(game_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    st.success('Le jeu a été lancé dans une fenêtre séparée (si Panda3D est installé).')
+                    st.info('Remarque: Panda3D ouvrira une fenêtre native en dehors du navigateur; cela peut ne pas fonctionner dans certains environnements distants.')
+                except Exception as e:
+                    st.error(f"Impossible de lancer le jeu: {e}")
+
             st.markdown('</div>', unsafe_allow_html=True)
